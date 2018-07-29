@@ -65,16 +65,7 @@ class UserBehavior(TaskSet):
         def postNewProject(self):
             num = str( random.randrange(10, 100) )
             word = "KONAMIKONAMIKONAMIKONAMIKONAMIKONAMI"+ num
-            payload ={ "doc": {
-                        "doctype": "Project", "name": "New Project 100",
-                        "__islocal": 1, "__unsaved": 1, "owner": "Administrator",
-                        "status": "Open", "is_active": "Yes", 
-                        "project_type_etms": "Internal", 
-                        "percent_complete_method": "Task Completion", "priority": "Medium",
-                        "company": "Ebkar Technology and Management Solutions",
-                        "__run_link_triggers": 1, "project_name": "THISISATEST",
-                        "expected_end_date": "2019-07-04"},
-                        "cmd": "frappe.client.insert"}
+            payload ={ 'doc': '{"docstatus":0,"doctype":"Project","name":"New Project 2","__islocal":1,"__unsaved":1,"owner":"Administrator","status":"Open","is_active":"Yes","project_type_etms":"Internal","percent_complete_method":"Task Completion","priority":"Medium","company":"Ebkar Technology and Management Solutions","__run_link_triggers":1,"project_name":"THISISATESST","expected_end_date":"2018-07-31"}', 'cmd': 'frappe.client.insert' }
             self.client.post("/desk#List/Project/List",
                 headers=headers,
                 data = payload,
