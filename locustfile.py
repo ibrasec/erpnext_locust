@@ -2,6 +2,8 @@ from locust import HttpLocust,  TaskSet,  task
 import json
 import random
 
+cprojects = []
+
 
 headers = {
 "Host": "192.168.88.10", 
@@ -11,10 +13,10 @@ headers = {
 "Accept-Encoding": "gzip,  deflate", 
 "Referer": "http: //192.168.88.10/desk", 
 "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8", 
-"X-Frappe-CSRF-Token": "2b8c1344487cbfabea4df9a111c9197bf103e9ec28414b1954b151b3", 
+"X-Frappe-CSRF-Token": "5c4df4db1a57cd5d4748cd5f3250d9843d39ee62169ec1366e186871", 
 "X-Requested-With": "XMLHttpRequest", 
 "Content-Length": "586", 
-"Cookie": "user_image=; user_id=Administrator; system_user=yes; full_name=Administrator; sid=a9010ef96c805b8f30d2e0b94099ada175b69aeb35d752c2a0f53eba; io=MYAQbjI8jP8fLsnOAAAA", 
+"Cookie": "user_image=; user_id=Administrator; system_user=yes; full_name=Administrator; sid=11826fe27d22af5a0c003cca6261c34ff9216b856ef76d30f76eb1b8; io=y_a8z3KO9YyRH7TdAAAA", 
 "Connection": "keep-alive"
 }
 
@@ -41,8 +43,7 @@ class UserBehavior(TaskSet):
 
         @task
         def projectList(self): 
-            response = self.client.get("/desk#List/Project/List", name="Projextlst")
-            print "Response status code: ",  response.status_code
+            self.client.get("/desk#List/Project/List", name="Projextlst")
     
         @task(2)
         def postlike(self):
@@ -60,11 +61,13 @@ class UserBehavior(TaskSet):
                              headers=headers,
                              data = payload,
                              name='postNolike')
-
-        @task(5)
+        
+        @task(2)
         def postNewProject(self):
             num = str( random.randrange(10, 100) )
-            word = "KONAMI"+ num
+            project = "KONAMI"+ num
+            print 'creating a new project',project
+            cprojects.append(project)
             payload ={ 'doc': '{"docstatus":0,"doctype":"Project",\
                         "name":"New Project 2","__islocal":1,"__unsaved":1,\
                         "owner":"Administrator","status":"Open","is_active":"Yes",\
@@ -73,7 +76,7 @@ class UserBehavior(TaskSet):
                         "priority":"Medium",\
                         "company":"Ebkar Technology and Management Solutions",\
                         "__run_link_triggers":1,\
-                        "project_name":'+'"'+ word +'"' + ' ,\
+                        "project_name":'+'"'+ project +'"' + ' ,\
                         "expected_end_date":"2018-07-31"}',
                          'cmd': 'frappe.client.insert' }
             self.client.post("/desk#List/Project/List",
@@ -81,6 +84,18 @@ class UserBehavior(TaskSet):
                 data = payload,
                 name='postNewProject')
 
+        @task(1)
+        def deleteProject(self):
+            if cprojects !=[]:
+                rproject = cprojects.pop()
+                print "removing project",rproject
+                payload ={'items': '["' + rproject + '"]', 
+                        'cmd': "frappe.desk.reportview.delete_items" ,
+                        'doctype': "Project" }
+                self.client.post("/desk#List/Project/List",
+                    headers=headers,
+                    data = payload,
+                    name='deleteProject')
    
         @task
         def stop(self):
