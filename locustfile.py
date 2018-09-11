@@ -126,7 +126,7 @@ class UserBehavior(TaskSet):
                 "currency":"LYD","selling_price_list":"Standard Selling","price_list_currency":"LYD",\
                 "apply_discount_on":"Grand Total","party_account_currency":"LYD","letter_head":"brega",\
                 "status":"Draft","delivery_status":"Not Delivered","billing_status":"Not Billed",\
-                "items":[{"docstatus":0,"doctype":"Sales Order Item","name":"New Sales Order Item 2",\
+                "items":[{"docstatus":0,"doctype":"Sales Order Item","name":'+'"'+ "New Sales Order Item "+sales_order_num +'"' + ',\
                 "__islocal":1,"__unsaved":1,"owner":"Administrator","stock_uom":"Unit",\
                 "margin_type":"","parent":'+'"'+ "New Sales Order "+sales_order_num +'"' + ',"parentfield":"items",\
                 "parenttype":"SalesOrder","idx":1,"qty":1234,"conversion_factor":1,\
