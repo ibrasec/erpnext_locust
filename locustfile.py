@@ -61,7 +61,7 @@ class UserBehavior(TaskSet):
         marital = random.choice(['Married','Single'])
         salutation = random.choice(['Dr','Prof','Master'])
         bdate = str( random.randrange(1970,2000) ) + '-' + str( random.randrange(1,12) ) + '-' + str( random.randrange(1,28) )
-        test2 = {'action': 'Save', 'doc': '{"docstatus":0,"doctype":"Employee",\
+        payload= {'action': 'Save', 'doc': '{"docstatus":0,"doctype":"Employee",\
         "name":"New Employee 2","__islocal":1,"__unsaved":1,"owner":"Administrator",\
         "naming_series":"EMP/","company":"Ebkar Technology and Management Solutions","status":"Active",\
         "salary_mode":"Cash","prefered_contact_email":"Personal Email","permanent_accommodation_type":"",\
@@ -70,23 +70,13 @@ class UserBehavior(TaskSet):
         "salutation":'+'"'+ salutation +'"'+',"employee_name":'+'"'+ name +'"'+',"date_of_joining":"2018-09-30",\
         "gender":'+'"'+ gender +'"'+',"employment_type":"Contract","personal_email":'+'"'+ email +'"'+',\
         "prefered_email":'+'"'+ email +'"'+',"cell_number":'+'"'+ phone +'"'+',\
-        "date_of_birth":'+'"'+ bdate +'"'+',"date_of_retirement":"2060-09-24"}', 'cmd': 'frappe.desk.form.save.savedocs'}
+        "date_of_birth":'+'"'+ bdate +'"'+',"date_of_retirement":"2060-09-24",\
+        "designation":'+'"'+ designation +'"'+'}', 'cmd': 'frappe.desk.form.save.savedocs'}
 
-        test = {'action': 'Save', 'doc': '{"docstatus":0,"doctype":"Employee","name":"New Employee 1","__islocal":1,"__unsaved":1,"owner":"Administrator","naming_series":"EMP/","company":"Ebkar Technology and Management Solutions","status":"Active","salary_mode":"","prefered_contact_email":"","permanent_accommodation_type":"","current_accommodation_type":"","marital_status":"","blood_group":"","leave_encashed":"","reason_for_resignation":"","bio":"","salutation":"Prof","employee_name":'+'"'+name+'"'+',"date_of_joining":"2018-09-30","date_of_birth":"2000-09-24","date_of_retirement":"2060-09-24","gender":"Male"}', 'cmd': 'frappe.desk.form.save.savedocs'}
-        payload = {'action': 'Save', 'doc': '{"docstatus":0,"doctype":"Employee","name":"New Employee 1",\
-            "__islocal":1,"__unsaved":1,"owner":"Administrator","naming_series":"EMP/",\
-            "company":"Ebkar Technology and Management Solutions","status":"Active","salary_mode":"Cash",\
-            "prefered_contact_email":'+'"'+ email +'"'+',"permanent_accommodation_type":"",\
-            "current_accommodation_type":"","marital_status":'+'"'+ marital +'"'+',\
-            "blood_group":'+'"'+ blood +'"'+',"leave_encashed":"","reason_for_resignation":"",\
-            "bio":"","salutation":'+'"'+ salutation +'"'+',"gender":'+'"'+ gender +'"'+',\
-            "employee_name":'+'"'+ name +'"'+',"date_of_joining":"2018-09-30",\
-            "date_of_birth":'+'"'+ bdate +'"'+',"date_of_retirement":"2040-02-01","scheduled_confirmation_date":"2018-09-30",\
-            "final_confirmation_date":"2018-09-30"}', 'cmd': 'frappe.desk.form.save.savedocs'}
         #headers["Content-Length"] = str( len( urllib.urlencode(test2) ) )
         self.client.post("/desk#List/Employee/List",
             headers=headers,
-            data = test2,
+            data = payload,
             name='AddEmloyee')
         
     @task(1)
