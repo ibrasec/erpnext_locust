@@ -1,26 +1,27 @@
 from locust import HttpLocust,  TaskSet,  task
 import json, requests, random, names, urllib
 import numpy as np
+import pandas as pd
 
 cprojects = []
 
-Host = '192.168.88.12'
+Host = '192.168.1.174'
 
 headers = {
-"Host": Host, 
-"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv: 61.0) Gecko/20100101 Firefox/61.0", 
-"Accept": "application/json,  text/javascript,  */*; q=0.01", 
-"Accept-Language": "en-GB, en;q=0.5", 
-"Accept-Encoding": "gzip,  deflate", 
-"Referer": "http: //"+Host+"/desk", 
-"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8", 
-"X-Frappe-CSRF-Token": "fa55d368060619c7db9e8a593c5f9f14913beb5bc1de0d9fab0131a4", 
-"X-Requested-With": "XMLHttpRequest", 
-"Content-Length": "564", 
-"Cookie": "io=2zIhpA_F26EhxDkTAAAC; user_image=; user_id=Administrator; system_user=yes; full_name=Administrator; sid=54335379586c5fb26ab872ebe825cb7b6cc1f1540a716a2be4f3c869", 
-"Connection": "keep-alive"
-}
-
+    'Host': Host,
+    'User-Agent': "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:62.0) Gecko/20100101 Firefox/62.0",
+    'Accept': "application/json, text/javascript, */*; q=0.01",
+    'Accept-Language': "en-US,en;q=0.5",
+    'Accept-Encoding': "gzip, deflate",
+    'Referer': "http://"+Host+"/desk",
+    'X-Frappe-CSRF-Token': "0b950fd00f881602d7dc2b4fd6ef5a47770f6d1b739524958ed4745b",
+    'X-Requested-With': "XMLHttpRequest",
+    'Content-Length': "424",
+    'Cookie': "user_image=; user_id=Administrator; system_user=yes; full_name=Administrator; sid=26f2f83936315f3e440de2ed5a6ccf970b39043db1b74752ad92ab2d; io=sUsK5QXh0pToCKOTAAAC",
+    'Connection': "keep-alive",
+    'Content-Type': "application/x-www-form-urlencoded",
+    'Cache-Control': "no-cache",
+    }
 
 
 class UserBehavior(TaskSet):
@@ -42,9 +43,106 @@ class UserBehavior(TaskSet):
         self.client.get("/profile")
 
     @task(1)
-    def projectList(self): 
-        self.client.get("/desk#List/Project/List", name="Projextlst") 
-              
+    def BrowseProjects(self): 
+        self.client.get("/desk#List/Project/List", name="BrowseProjects") 
+        
+    @task(1)
+    def BrowseItem(self):
+        self.client.get("/desk#List/Item/List", name="BrowseItems") 
+        
+    @task(1)
+    def AddItem(self):
+        itemcode = str( random.randrange(111,999) )
+        self.itemcode = itemcode
+        itemname = 'item_' + str( random.randrange(1,9999) )
+        itemgroup = random.choice( ['Consumable','All Item Groups','Sub Assemblies','Services','Raw Material','Products'] )   
+        payload = {'doc':'{"docstatus":0,"doctype":"Item","name":"New Item 1","__islocal":1,"__unsaved":1,"owner":"Administrator","naming_series":"ITEM-","stock_uom":"Nos","is_stock_item":1,"default_warehouse":"Stores - ETMS","end_of_life":"2099-12-31","default_material_request_type":"Purchase","valuation_method":"","has_variants":0,"variant_based_on":"Item Attribute","is_purchase_item":1,"min_order_qty":0,"country_of_origin":"Libya","is_sales_item":1,"publish_in_hub":0,"synced_with_hub":0,"__run_link_triggers":1,"item_code":'+'"' + itemcode + '"'+',"item_name":'+'"' + itemname + '"'+',"item_group":'+'"' + itemgroup + '"'+',"create_variant":0}','cmd':'frappe.client.insert'}      
+    
+        headers["Content-Length"] = str( len( urllib.urlencode(payload) ) )
+        
+        self.client.post("/desk#List/Item/List",
+            headers=headers,
+            data = payload,
+            name ='AddItem')      
+
+    def CollectItems(self):
+        url = 'http://'+Host+'/'
+        item_list = {'cmd': 'frappe.desk.search.search_link', 'doctype': 'Item', 'filters': '{"is_purchase_item":1}', 'query': 'erpnext.controllers.queries.item_query', 'txt': '', '_': '1537993622915'}
+        r = requests.get( url, cookies = headers, params = item_list )
+        return json.loads(r.content)
+    
+    # To automatically create suppliers -------------------------
+    # locust tests will take from this functions the suppliers available
+    def CollectSuppliers(self):
+        url = 'http://'+Host+'/'
+        suppliers_list = {'cmd': 'frappe.desk.search.search_link', 'txt': '', 'doctype': 'Supplier', '_': '1538061401462'}
+        r = requests.get( url, cookies = headers, params = suppliers_list )
+        return json.loads(r.content)['results']
+    
+    def Supplierdb(self):
+        suppliers_dataset = [('alpha', 'ahmed', 'ahmed@alpha.com', '0921236309'),\
+        ('upsilon', 'usama', 'usama@upsilon.com', '0921239561'),\
+        ('omega', 'omar', 'omar@omega.com', '0921234433'),\
+        ('beta', 'bader', 'bader@beta.com', '0921235369'),\
+        ('theta', 'tamer', 'tamer@theta.com', '0921232460'),\
+        ('iota', 'imad', 'imad@iota.com', '0921233303'),\
+        ('zeta', 'zaher', 'zaher@zeta.com', '0921236347'), \
+        ('gama', 'gumar', 'gumar@gama.com', '0921239116'),\
+        ('lambda', 'lamar', 'lamar@lambda.com', '0921234276'),\
+        ('segma', 'samer', 'samer@segma.com', '0921238457'),\
+        ('psi', 'paul', 'paul@psi.com', '0921239749'),\
+        ('delta', 'dafer', 'dafer@delta.com', '0921236156')]
+        subtype = ['Distributor','Pharmaceutical','Electrical','Raw     Material','Services','Hardware','Distributor','Pharmaceutical','Electrical','Raw Material','Services','Hardware']
+        return pd.DataFrame( data=suppliers_dataset, columns=['supplier','cname','email','phone'], index=subtype )
+        
+    @task(1)
+    def AddSuppliers(self):
+        suppliers = self.CollectSuppliers()
+        print 'suppliers',suppliers
+        if len(suppliers)<=12: 
+            df = self.Supplierdb()
+            subtype = list(df.index)
+            supplier_type = random.choice(subtype)
+            payload = {'doc':'{"docstatus":0,"doctype":"Supplier","name":"New+Supplier+6",\
+                "__islocal":1,"__unsaved":1,"owner":"Administrator","naming_series":"SUPP-",\
+                "country":"Libya","language":"en","disabled":0,"__run_link_triggers":1,\
+                "supplier_name":'+'"'+  df.loc[supplier_type]['supplier'][random.randrange(0,2)] +'"'+',"supplier_type":'+'"'+supplier_type+'"'+'}', 'cmd': 'frappe.client.insert'}
+            self.client.post("/desk#List/Supplier/List",
+                    headers = headers,
+                    data = payload,
+                    name='AddSupplier')
+        else:
+            pass
+
+    @task(1)
+    def AddSupplierContacts(self):
+        df = self.Supplierdb()
+        # checking that every supplier has a contact
+        for supplier_name in list(df['supplier']):
+            url = 'http://'+Host+'/?txt=&doctype=Contact&query=erpnext.buying.doctype.request_for_quotation.request_for_quotation.get_supplier_contacts&filters={%22supplier%22:%22'+supplier_name+'%22}&cmd=frappe.desk.search.search_link&_=1538139197766'
+            r = requests.get(url, cookies=headers)
+            #print r.content
+            if len(json.loads(r.content)['results']) < 1:
+                d = df.set_index('supplier')
+                supplier_data = list(d.loc[supplier_name])
+                print supplier_data
+                payload = {'action': 'Save', 'doc': '{"docstatus":0,"doctype":"Contact","name":"New Contact 1",\
+                            "__islocal":1,"__unsaved":1,"owner":"Administrator","status":"Passive","is_primary_contact":0,\
+                            "first_name":'+'"'+supplier_data[0]+'"'+',"email_id":'+'"'+ supplier_data[1] +'"'+',\
+                            "salutation":"Mr","gender":"Male","phone":"",\
+                            "mobile_no":'+'"'+ supplier_data[2] +'"'+',"links":[{"docstatus":0,"doctype":"Dynamic Link",\
+                            "name":"New Dynamic Link 1","__islocal":1,"__unsaved":1,"owner":"Administrator",\
+                            "parent":"New Contact 1","parentfield":"links","parenttype":"Contact","idx":1,\
+                            "__unedited":false,"link_doctype":"Supplier","link_name":'+'"'+ supplier_name +'"'+',\
+                            "link_title":'+'"'+ supplier_name +'"'+'}]}', 'cmd': 'frappe.desk.form.save.savedocs'}
+                print 'payload101'*10,payload,'supplier_name'*10,supplier_name
+                self.client.post("/desk#List/Contact/List",
+                        headers = headers,
+                        data = payload,
+                        name='AddSupplierContacts')
+            else:
+                print "THE LENGHT IS MORE THAN ONE"
+                
     @task(1)
     def BrowseEmployee(self):
         self.client.get("/desk#List/Employee/List", name="BrowseEmployee") 
@@ -100,7 +198,7 @@ class UserBehavior(TaskSet):
     
         @task(1)
         def postNewProject(self):
-            num = str( random.randrange(1, 10) )
+            num = str( random.randrange(1, 100) )
             project = "KONAMI"+ num
             print 'creating a new project',project
             cprojects.append(project)
@@ -249,7 +347,7 @@ class UserBehavior(TaskSet):
             }
             r = requests.get(url,cookies=headers,params=sales_order_list)
             if r.content != '{}': 
-                j = json.loads(r.content)
+                j = json.loads( r.content )
                 SO_info = dict( zip(j['message']['keys'], j['message']['values'][0]) )
                 Goto = url+'desk#Form/Sales%20Order/'+str( SO_info['name'] )
                 print Goto
@@ -305,6 +403,5 @@ class WebsiteUser(HttpLocust):
     task_set = UserBehavior
     min_wait = 5000
     max_wait = 9000
-
 
 
